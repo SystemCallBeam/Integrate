@@ -4,21 +4,6 @@ class Integrate {
     double eval(double x);
   }
 
-  //static final int LEFT_POINT = 0;    // 46340
-  /* S: 0.3333225435965304
-    S2: 1.0000000002328302
-    S: 0.33332254382936394
-    S2: -1.0001424300858102 */
-  //static final int MID_POINT = 1;     // 46340 ++
-  /* S: 0.3333333332945263
-    S2: 0.6666781757554726 
-    S: 0.3333333332945291
-    S2: -0.6667731303816206 */
-  //static final int RIGHT_POINT = 2;   // 46340
-  /* S: 0.33334412322536083
-    S2: 0.3333448424997584 
-    S: 0.333344122992524
-    S2: -0.33339232050826 */
   public enum POINT {
     LEFT_POINT,
     MID_POINT,
@@ -26,8 +11,9 @@ class Integrate {
   }
 
   static POINT p;
+  static double error = 0.001;
 
-  static double integrate(
+  static double integrate1(
     FofX f,
     double a,
     double b,
@@ -69,63 +55,61 @@ class Integrate {
       switch (point) {
         case LEFT_POINT:
           sum += f.eval(xi) * dxi; // left point
+          break;
         case MID_POINT:
           sum += f.eval(xi + dxi / 2) * dxi; // mid point
+          break;
         case RIGHT_POINT:
           sum += f.eval(xi + dxi) * dxi; // right point
+          break;
       }
       xi += dxi;
     }
     return sum;
   }
 
-  public static void main(String args[]) {
-    FofX f = x -> x * x;
-    FofX f2 = x -> Math.pow(Math.E, x);
-    // int interval = args.length>0?Integer.parseInt(args[0]):100;
-    double compare1 = (1.0 / 3.0);
+  public static void main(String[] args) {
+    q1();
+  }
+
+  public static void q1() {
+    FofX f1 = x -> x * x;
+    FofX f2 = x -> Math.exp(x);
+
+    double compare1 = 1.0 / 3.0;
     double compare2 = Math.E - 1;
 
+    System.out.println("f1 = x -> x * x");
+    ff(compare1, f1);
+
+    System.out.println("f2 = x -> Math.exp(x)");
+    ff(compare2, f2);
+  }
+
+  public static void ff(double compare, FofX f) {
+    for (POINT point : POINT.values()) { // compute each point
+      System.out.println(point);
+      func1(point, compare, f);
+      func2(point, compare, f);
+      System.out.println("----------");
+    }
+  }
+
+  public static void func1(POINT point, double compare, FofX f) {
     int i = 0;
-    POINT point = POINT.LEFT_POINT;
-    double sum = integrate2(f, 0, 1, 1, point), error = 0.001;
-    System.out.println(sum);
-    for (i = 40000; Math.abs(compare1 - sum) >= error; i++) {
-      sum = integrate2(f, 0, 1, i, point);
-      System.out.println(sum);
+    double sum = 0;
+    for (i = 0; Math.abs(compare - sum) >= error; i++) {
+      sum = integrate1(f, 0, 1, i, point);
     }
-    System.out.println("S: " + sum + "\tI: " + i);
-    System.out.println("++++++++++++++");
-
-    /* func1(f, compare1);
-    func1(f2, compare2); */
+    System.out.println(sum + " " + (i - 1));
   }
 
-  public static void func1(FofX f, double compare) {
-    func(f, POINT.LEFT_POINT, compare);
-    func(f, POINT.MID_POINT, compare);
-    func(f, POINT.RIGHT_POINT, compare);
-  }
-
-  public static void func(FofX f, POINT point, double compare) {
-    int i = 1;
-    double error = 0.001, sum;
-    System.out.println(point);
-
-    sum = integrate(f, 0, 1, i, point);
-    for (i = 1; Math.abs(compare - sum) >= error; i++) {
-      sum = integrate(f, 0, 1, i, point);
-    }
-    System.out.println("S: " + sum + "\tI: " + i);
-
-    System.out.println("--------------");
-
-    sum = integrate2(f, 0, 1, 1, point);
-    System.out.println(sum);
-    for (i = 1; Math.abs(compare - sum) >= error; i++) {
+  public static void func2(POINT point, double compare, FofX f) {
+    int i = 0;
+    double sum = 0;
+    for (i = 0; Math.abs(compare - sum) >= error; i++) {
       sum = integrate2(f, 0, 1, i, point);
     }
-    System.out.println("S: " + sum + "\tI: " + i);
-    System.out.println("++++++++++++++");
+    System.out.println(sum + " " + (i - 1));
   }
 }
