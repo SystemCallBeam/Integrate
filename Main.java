@@ -1,43 +1,69 @@
 public class Main {
 
     static POINT p;
+    static double error = 0.001;
   
     public static void main(String[] args) {
-      FofX f1 = x -> x * x;
-      FofX f2 = x -> Math.exp(x);
-      double compare1 = 1.0 / 3.0;
-      double compare2 = 0;
-      ff(compare1, f1);
+        FofX f = x -> x*x;
+        double s = integrateLeft(f, 0, 1);
+        System.out.println(s);
+    }
+
+    public static void q1() {
+        FofX f1 = x -> x * x;
+        FofX f2 = x -> Math.exp(x);
+        double compare1 = 1.0 / 3.0;
+        double compare2 = Math.E - 1;
+        System.out.println("f1 = x -> x * x");
+        ff(compare1, f1);
+        System.out.println("f2 = x -> Math.exp(x)");
+        ff(compare2, f2);  
+    }
+
+    public static double integrateLeft(FofX f, double a, double b) {
+        double dx = 0.1; // initial interval size
+        double sum = 0;
+        double prevSum = 0;
+        double error = 0.001;
+        int maxIntervals = 100000; // maximum number of intervals
+        int i = 0;
+        do {
+            prevSum = sum;
+            sum = 0;
+            for (double x = a; x < b; x += dx) {
+                sum += f.eval(x) * dx;
+            }
+            i++;
+            dx /= 2; // reduce interval size
+        } while (i < maxIntervals && Math.abs(sum - prevSum) >= error) ;
+        return i;
     }
   
     public static void ff(double compare, FofX f) {
       for (POINT point : POINT.values()) {
+        System.out.println(point);
         func1(point, compare, f);
         func2(point, compare, f);
         System.out.println("----------");
       }
     }
   
-    public static void func1(POINT point, double compare, FofX f1) {
-      POINT p = point;
-      FofX f = f1;
+    public static void func1(POINT point, double compare, FofX f) {
       int i = 0;
-      double error = 0.001, sum = 0;
+      double sum = 0;
       for (i = 0; Math.abs(compare - sum) >= error; i++) {
-        sum = integrate1(f, 0, 1, i, p);
+        sum = integrate1(f, 0, 1, i, point);
       }
-      System.out.println(sum + " " + i);
+      System.out.println(sum + " " + (i - 1));
     }
   
-    public static void func2(POINT point, double compare, FofX f1) {
-      POINT p = point;
-      FofX f = f1;
+    public static void func2(POINT point, double compare, FofX f) {
       int i = 0;
-      double error = 0.001, sum = 0;
+      double sum = 0;
       for (i = 0; Math.abs(compare - sum) >= error; i++) {
-        sum = integrate2(f, 0, 1, i, p);
+        sum = integrate2(f, 0, 1, i, point);
       }
-      System.out.println(sum + " " + i);
+      System.out.println(sum + " " + (i - 1));
     }
   
     static double integrate1(
